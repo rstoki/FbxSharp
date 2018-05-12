@@ -188,9 +188,7 @@
     <Content Include="pre-build.py" />
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>python $(ProjectDir)pre-build.py $(ProjectDir)AssemblyInfo.Git.cs</PreBuildEvent>
+    <PreBuildEvent>python "$(ProjectDir)pre-build.py" "$(ProjectDir)AssemblyInfo.Git.cs"</PreBuildEvent>
   </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="tools\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
