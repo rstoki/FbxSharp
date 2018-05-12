@@ -23,8 +23,9 @@ namespace FbxSharp
         {
             None,
             RGBIntensity,
-            Black
-        };
+            Black,
+			Alpha_Black
+		};
 
         public FbxTexture.EAlphaSource AlphaSource;
         public FbxVector4 Cropping;
