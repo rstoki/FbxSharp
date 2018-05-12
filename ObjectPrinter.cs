@@ -688,7 +688,10 @@ namespace FbxSharp
 
         protected void _PrintFbxNull(FbxNull obj, TextWriter writer)
         {
-            throw new NotImplementedException();
+			writer.WriteLine("${0}", PrintObjectID(obj));  // extra $ for easy text search
+			writer.WriteLine("    Name = {0}", quote(obj.GetName()));
+			writer.WriteLine("    >> FbxNULL NULL NULL NULL <<");
+
         }
 
         protected void _PrintFbxSkeleton(FbxSkeleton obj, TextWriter writer)
