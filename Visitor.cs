@@ -404,10 +404,10 @@ namespace FbxSharp
 
         protected void _AcceptFbxCamera(FbxCamera obj, ISet<object> visitedObjects)
         {
-            throw new NotImplementedException();
-        }
+			//throw new NotImplementedException();  // R: -- TODO -- temporarily commented out. 
+		}
 
-        protected void _AcceptFbxLight(FbxLight obj, ISet<object> visitedObjects)
+		protected void _AcceptFbxLight(FbxLight obj, ISet<object> visitedObjects)
         {
             //TODO: shadow texture
         }

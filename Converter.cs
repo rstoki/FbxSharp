@@ -35,8 +35,10 @@ namespace FbxSharp
             foreach (var obj in objs.Properties)
             {
                 var fobj = ConvertObject(obj, fbxObjectsById, actualIdsByInFileIds);
-                fbxObjects.Add(fobj);
-                fbxObjectsById[fobj.UniqueId] = fobj;
+				if (fobj != null) {		// <-- IF converted FBX object is null, it means it was ignored (for example, "CameraSwitcher" NodeAttribute, that does not have "TypeFlags" value. 
+					fbxObjects.Add(fobj);
+					fbxObjectsById[fobj.UniqueId] = fobj;
+				}
             }
 
             // connect objects
@@ -47,7 +49,8 @@ namespace FbxSharp
                 CheckConnection(conn);
                 var connType = ((string)conn.Values[0]);
                 var inFileSrcId = (ulong)((Number)conn.Values[1]).AsLong.Value;
-                var srcId = actualIdsByInFileIds[inFileSrcId];
+
+				var srcId = actualIdsByInFileIds[inFileSrcId];
                 var inFileDstId = (ulong)((Number)conn.Values[2]).AsLong.Value;
                 var dstId = (inFileDstId == 0 ? 0 : actualIdsByInFileIds[inFileDstId]);
                 FbxObject dstObj;
@@ -147,7 +150,8 @@ namespace FbxSharp
                 { "AnimationLayer", ConvertAnimationLayer },
                 { "AnimationCurveNode", ConvertAnimationCurveNode },
                 { "AnimationCurve", ConvertAnimationCurve },
-            };
+				{ "CollectionExclusive", ConvertCollectionExclusive },
+			};
 
         public FbxObject ConvertObject(
             ParseObject obj,
@@ -157,9 +161,8 @@ namespace FbxSharp
             if (ConvertersByObjectName.ContainsKey(obj.Name))
             {
                 var fbxobj = ConvertersByObjectName[obj.Name](obj);
-                if (obj != null &&
-                    obj.Values.Count > 0)
-                {
+                if (fbxobj != null && obj != null && obj.Values.Count > 0) 
+				{
                     var inFileId = (ulong)((Number)obj.Values[0]).AsLong.Value;
                     actualIdsByInFileIds[inFileId] = fbxobj.GetUniqueID();
                 }
@@ -187,11 +190,23 @@ namespace FbxSharp
         public static FbxNodeAttribute ConvertNodeAttribute(ParseObject obj)
         {
             var typeFlagsProp = obj.FindPropertyByName("TypeFlags");
-            var typeFlags = new HashSet<string>(typeFlagsProp.Values.Select(x => (string)x));
-            // null
-            // root
-            // skeleton
-            if (typeFlags.Contains("Skeleton"))
+            var typeFlags = new HashSet<string>();
+
+			if (typeFlagsProp != null) {
+				typeFlagsProp.Values.ForEach(x => typeFlags.Add((string)x));
+			} else {
+				// -- the NodeAttribute DOES NOT contain "TypeFlags" attribute, which it should!  
+				//	  For example, "CameraSwitcher" is a NodeAttribute, that does not contain "TypeFlags"
+				//	  In such case, return the "NULL-object" 
+				return ConvertNull(obj); ; 
+			}
+
+
+
+			// null
+			// root
+			// skeleton
+			if (typeFlags.Contains("Skeleton"))
             {
                 return ConvertSkeleton(obj);
             }
@@ -210,6 +225,7 @@ namespace FbxSharp
             {
                 return ConvertCamera(obj);
             }
+
 
             throw new NotImplementedException();
         }
@@ -480,7 +496,11 @@ namespace FbxSharp
                     case "LayerElementUV":
                         layer.SetUVs(uvs[indexValue]);
                         break;
-                    default:
+					case "LayerElementTexture":
+						// TODO -- just for TEST, Texture layer is ignored for now (in order not to stop parsing). 
+						break;
+
+					default:
                         throw new NotImplementedException();
                     }
                     break;
@@ -697,7 +717,8 @@ namespace FbxSharp
                     break;
                 case "Visibility":
                 case "bool":
-                    propType = typeof(bool);
+				case "Bool":
+					propType = typeof(bool);
                     propValue = (((Number)p.Values[4]).AsLong.Value != 0);
                     break;
                 case "enum":
@@ -714,6 +735,7 @@ namespace FbxSharp
                     propValue = new FbxVector3(x, y, z);
                     break;
                 case "int":
+				case "Integer":
                     propType = typeof(int);
                     propValue = (int)((Number)p.Values[4]).AsLong.Value;
                     break;
@@ -748,12 +770,20 @@ namespace FbxSharp
                     propValue = "";
                     break;
                 case "Number":
-                    if ((string)p.Values[3] != "A")
-                        throw new InvalidOperationException();
-                    propType = typeof(double);
+						//if ((string)p.Values[3] != "A") {		// <-- rstoki: Commented-out the test for FLAGS for Number type. Flags: A == animatable; A+ == animated; U = user-defined; H == (highly-speculative) Hidden?; L7 == (highly-speculative) "could be the four 'Locked' flags (number being four bits bitflag)"
+						//    throw new InvalidOperationException();
+						//}
+
+						propType = typeof(double);
                     propValue = ((Number)p.Values[4]).AsDouble.Value;
                     break;
-                default:
+				case "object":
+					// R: TODO -- "object" type is ignored for now -- just to continue with the parsing. For example, it is seen as "GoboProperty" in Light element. 
+					propType = typeof(string);
+					propValue = "";
+					break;
+
+				default:
                     throw new NotImplementedException("Unknown property type: " + type1);
                 }
 
@@ -969,7 +999,12 @@ namespace FbxSharp
                 throw new InvalidOperationException();
 
             var shadingModel = (string)shadingModelProp.Values[0];
-            if (shadingModel != "phong")
+
+			if (shadingModel == "lambert") {    // R: TODO -- just temporary -- convert the "lambert" shading as it was "phong"... just to enable parser to continue. 
+				return ConvertPhongMaterial(obj);
+			}
+
+			if (shadingModel != "phong")
                 throw new NotImplementedException();
 
             return ConvertPhongMaterial(obj);
@@ -1429,6 +1464,48 @@ namespace FbxSharp
 
             return curve;
         }
+
+
+		public static FbxCollection ConvertCollectionExclusive(ParseObject obj)
+		{
+			if (obj.Values.Count < 3) {
+				throw new InvalidOperationException();
+			}
+			if (obj.Values.Count > 3) {
+				throw new NotImplementedException();
+			}
+
+
+
+			var name = (string)obj.Values[1]; // <-- we are NOT parsing name of the layer right now! 
+			var type = (string)obj.Values[2];
+
+
+			var layer = new FbxCollection(name);
+
+
+			foreach (var prop in obj.Properties) {
+				switch (prop.Name) {
+					case "Properties70":
+						var propinfos = ConvertProperties70(prop);
+						foreach (var propinfo in propinfos) {
+							var pname = propinfo.Item1;
+							var ptype = propinfo.Item2;
+							var pvalue = propinfo.Item3;
+
+							ImportProperty(layer, pname, ptype, pvalue);
+						}
+						break;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+
+
+
+			return layer; 
+		}
+
 
         void CheckConnections(ParseObject conns)
         {
