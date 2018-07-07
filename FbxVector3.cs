@@ -52,7 +52,14 @@ namespace FbxSharp
             return !u.Equals(v);
         }
 
-        public bool Equals(FbxVector3 other)
+
+
+		/// <summary>
+		/// Two FbxVector4s are equal iff all coordinates (X, Y, Z) are equal. 
+		/// </summary>
+		/// <param name="other"></param>
+		/// <returns></returns>
+		public bool Equals(FbxVector3 other)
         {
             return (this.X == other.X &&
                 this.Y == other.Y &&
