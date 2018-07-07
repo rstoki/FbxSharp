@@ -58,11 +58,17 @@ namespace FbxSharp
                 this.Y == other.Y &&
                 this.Z == other.Z);
         }
+
+		/// <summary>
+		/// Two FbxVector3s are equal iff all coordinates (X, Y, Z) are equal. 
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
         public override bool Equals(object obj)
         {
             if (obj is FbxVector3)
             {
-                return Equals((FbxVector3)obj);
+                return this.Equals((FbxVector3)obj);
             }
             else
             {

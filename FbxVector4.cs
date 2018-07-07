@@ -70,6 +70,34 @@ namespace FbxSharp
             //    throw new ArgumentOutOfRangeException("index", "index must be 0, 1, 2, or 3");
             //}
         }
+
+
+	    public bool Equals(FbxVector4 other)
+	    {
+		    return this.X.Equals(other.X) && this.Y.Equals(other.Y) && this.Z.Equals(other.Z) && this.W.Equals(other.W);
+	    }
+
+		/// <summary>
+		/// Two FbxVector4s are equal iff all coordinates (X, Y, Z) are equal. 
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public override bool Equals(object obj)
+	    {
+		    if (ReferenceEquals(null, obj)) return false;
+		    return obj is FbxVector4 && this.Equals((FbxVector4) obj);
+	    }
+
+	    public override int GetHashCode()
+	    {
+		    unchecked {
+			    var hashCode = this.X.GetHashCode();
+			    hashCode = (hashCode*397) ^ this.Y.GetHashCode();
+			    hashCode = (hashCode*397) ^ this.Z.GetHashCode();
+			    hashCode = (hashCode*397) ^ this.W.GetHashCode();
+			    return hashCode;
+		    }
+	    }
     }
 }
 
