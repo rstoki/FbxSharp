@@ -2,11 +2,8 @@
 
 namespace FbxSharp
 {
-    public class FbxLayerElementSmoothing
-    {
-        public FbxLayerElementSmoothing()
-        {
-        }
+    public class FbxLayerElementSmoothing : FbxLayerElementTemplate<long>
+	{
     }
 }
 

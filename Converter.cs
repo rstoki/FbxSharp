@@ -405,8 +405,9 @@ namespace FbxSharp
             var uvs = new List<FbxLayerElementUV>();
             var visibility = new List<FbxLayerElementVisibility>();
             var materials = new List<FbxLayerElementMaterial>();
+			var smoothing = new List<FbxLayerElementSmoothing>();
 
-            var mesh = new FbxMesh();
+			var mesh = new FbxMesh();
             mesh.Name = ((string)obj.Values[1]);
 
             foreach (var prop in obj.Properties)
@@ -450,10 +451,18 @@ namespace FbxSharp
                     ExpandListToMinimum(materials, index);
                     materials[index] = ConvertLayerElementMaterial(prop);
                     break;
-                case "Layer":
+
+				case "LayerElementSmoothing":
+					index = (int)(prop.Values.Count > 0 ? ((Number)prop.Values[0]).AsLong.Value : 0);
+					ExpandListToMinimum(smoothing, index);
+					smoothing[index] = ConvertLayerElementSmoothing(prop);
+					break;
+
+				case "Layer":
                     var layer = mesh.GetLayer(mesh.CreateLayer());
-                    ConvertLayer(layer, prop, normals, uvs, visibility, materials);
+                    ConvertLayer(layer, prop, normals, uvs, visibility, materials, smoothing);
                     break;
+
                 default:
                     throw new NotImplementedException();
                 }
@@ -462,7 +471,7 @@ namespace FbxSharp
             return mesh;
         }
 
-        static void ConvertLayer(FbxLayer layer, ParseObject obj, List<FbxLayerElementNormal> normals, List<FbxLayerElementUV> uvs, List<FbxLayerElementVisibility> visibility, List<FbxLayerElementMaterial> materials)
+        static void ConvertLayer(FbxLayer layer, ParseObject obj, List<FbxLayerElementNormal> normals, List<FbxLayerElementUV> uvs, List<FbxLayerElementVisibility> visibility, List<FbxLayerElementMaterial> materials, List<FbxLayerElementSmoothing> smoothings)
         {
             foreach (var prop in obj.Properties)
             {
@@ -484,24 +493,31 @@ namespace FbxSharp
                     var indexValue = (int)((Number)index.Values[0]).AsLong.Value;
                     switch ((string)type.Values[0])
                     {
-                    case "LayerElementNormal":
-                        layer.SetNormals(normals[indexValue]);
-                        break;
-                    case "LayerElementMaterial":
-                        layer.SetMaterials(materials[indexValue]);
-                        break;
-                    case "LayerElementVisibility":
-                        layer.SetVisibility(visibility[indexValue]);
-                        break;
-                    case "LayerElementUV":
-                        layer.SetUVs(uvs[indexValue]);
-                        break;
-					case "LayerElementTexture":
-						// TODO -- just for TEST, Texture layer is ignored for now (in order not to stop parsing). 
-						break;
+						case "LayerElementNormal":
+							layer.SetNormals(normals[indexValue]);
+							break;
+						case "LayerElementMaterial":
+							layer.SetMaterials(materials[indexValue]);
+							break;
+						case "LayerElementVisibility":
+							layer.SetVisibility(visibility[indexValue]);
+							break;
+						case "LayerElementUV":
+							layer.SetUVs(uvs[indexValue]);
+							break;
 
-					default:
-                        throw new NotImplementedException();
+						case "LayerElementSmoothing":
+							layer.SetSmoothing(smoothings[indexValue]);
+							break;
+
+						case "LayerElementTexture":
+							
+							// TODO -- R: just for TEST, Texture layer is ignored for now (in order not to stop parsing). 
+							//	layer.SetTextures(<a>, <b>);	<-- what are the proper arguments for the method "SetTextures"? 
+							break;
+
+						default:
+							throw new NotImplementedException();
                     }
                     break;
                 default:
@@ -618,7 +634,43 @@ namespace FbxSharp
             return visibility;
         }
 
-        public static FbxLayerElementMaterial ConvertLayerElementMaterial(ParseObject obj)
+
+
+		public static FbxLayerElementSmoothing ConvertLayerElementSmoothing(ParseObject obj)
+		{
+			var smoothing = new FbxLayerElementSmoothing();
+
+			foreach (var prop in obj.Properties) {
+				switch (prop.Name) {
+					case "Version":
+						if (((Number)prop.Values[0]).AsLong.Value != 102)
+							throw new NotImplementedException();
+						break;
+					case "Name":
+						smoothing.Name = ((string)prop.Values[0]);
+						break;
+					case "MappingInformationType":
+						smoothing.MappingMode = ConvertMappingInformationType(prop);
+						break;
+					case "ReferenceInformationType":
+						smoothing.ReferenceMode = ConvertReferenceInformationType(prop);
+						break;
+					case "Smoothing":
+						smoothing.GetDirectArray().List.AddRange( prop.Properties[0].Values.Select( n => ((Number)n).AsLong.Value ) );
+						break;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+
+			return smoothing;
+		}
+
+
+
+
+
+		public static FbxLayerElementMaterial ConvertLayerElementMaterial(ParseObject obj)
         {
             var material = new FbxLayerElementMaterial();
 

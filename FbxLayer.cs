@@ -11,7 +11,8 @@ namespace FbxSharp
             materials = new ObjectView<FbxLayerElementMaterial, FbxLayerElement>(elements, eh => elements.CollectionChanged += eh);
             uvs = new ObjectView<FbxLayerElementUV, FbxLayerElement>(elements, eh => elements.CollectionChanged += eh);
             visibility = new ObjectView<FbxLayerElementVisibility, FbxLayerElement>(elements, eh => elements.CollectionChanged += eh);
-        }
+			smoothing = new ObjectView<FbxLayerElementSmoothing, FbxLayerElement>(elements, eh => elements.CollectionChanged += eh);
+		}
 
         readonly ChangeNotifyList<FbxLayerElement> elements = new ChangeNotifyList<FbxLayerElement>();
 
@@ -110,14 +111,21 @@ namespace FbxSharp
             throw new NotImplementedException();
         }
 
-        public FbxLayerElementSmoothing GetSmoothing()
-        {
-            throw new NotImplementedException();
-        }
-        public void SetSmoothing(FbxLayerElementSmoothing pSmoothing)
-        {
-            throw new NotImplementedException();
-        }
+
+		readonly ObjectView<FbxLayerElementSmoothing, FbxLayerElement> smoothing;
+		public FbxLayerElementSmoothing GetSmoothing()
+		{
+			return this.smoothing.Get();
+		}
+		public void SetSmoothing(FbxLayerElementSmoothing pSmoothing)
+		{
+			if (this.smoothing.Get() != null) {
+				elements.Remove(this.smoothing.Get());
+			}
+
+			elements.Add(pSmoothing);
+		}
+
 
         public FbxLayerElementCrease GetVertexCrease()
         {
@@ -164,13 +172,16 @@ namespace FbxSharp
         {
             if (visibility.Get() != null)
             {
-                elements.Remove(uvs.Get());
+                elements.Remove(this.visibility.Get());
             }
 
             elements.Add(pVisibility);
         }
 
-        public FbxLayerElementTexture GetTextures(FbxLayerElement.EType pType)
+
+	
+
+		public FbxLayerElementTexture GetTextures(FbxLayerElement.EType pType)
         {
             throw new NotImplementedException();
         }
@@ -178,6 +189,9 @@ namespace FbxSharp
         {
             throw new NotImplementedException();
         }
+
+
+
 
         public FbxLayerElement GetLayerElementOfType(FbxLayerElement.EType pType, bool pIsUV=false)
         {
