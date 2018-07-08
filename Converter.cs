@@ -858,8 +858,12 @@ namespace FbxSharp
                         ((Number)values[i]).AsDouble.Value,
                         ((Number)values[i+1]).AsDouble.Value,
                         ((Number)values[i+2]).AsDouble.Value,
-                        0);
-                mesh.SetControlPointAt(v, i/3);
+                        1);     // <-- POINTS (ControlPoints) should be created with Homogeneous Coordinate = 1. 
+								//     Points support translation, so that it need to have w = 1;
+								//	   Vectors does not support translation (only rotation & scale), so for vectors there should be w = 0. 
+								//	  Ref.: http://learnwebgl.brown37.net/transformations2/transformations_matrices.html 
+
+				mesh.SetControlPointAt(v, i/3);
             }
         }
 
