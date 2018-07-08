@@ -28,11 +28,34 @@ namespace FbxSharp
             M23 = pM.M23;
             M33 = pM.M33;
         }
-        //public Matrix(AMatrix pM)
-        //{
-        //    throw new NotImplementedException();
-        //}
-        public FbxMatrix(FbxVector4 pT, FbxVector4 pR, FbxVector4 pS)
+		//public Matrix(AMatrix pM)
+		//{
+		//    throw new NotImplementedException();
+		//}
+
+
+		/// <summary>
+		/// Constructor of transformation matrix for translation, rotations and scaling in form of FbxVector4. 
+		/// 
+		/// It just calls the following variant of constructor accepting the FbxVector3s. 
+		/// </summary>
+		/// <param name="pT">Translation vector (x,y,z)</param>
+		/// <param name="pR">Rotations around axis (x,y,z) in DEGREES</param>
+		/// <param name="pS">Scaling vector for axes (x,y,z). </param>
+		public FbxMatrix(FbxVector4 pT, FbxVector4 pR, FbxVector4 pS) 
+			: this(new FbxVector3(pT.X, pT.Y, pT.Z), new FbxVector3(pR.X, pR.Y, pR.Z), new FbxVector3(pS.X, pS.Y, pS.Z))
+		{
+		}
+
+
+
+		/// <summary>
+		/// Constructor of transformation matrix for translation, rotations and scaling in form of FbxVector3. 
+		/// </summary>
+		/// <param name="pT">Translation vector (x,y,z)</param>
+		/// <param name="pR">Rotations around axis (x,y,z) in DEGREES</param>
+		/// <param name="pS">Scaling vector for axes (x,y,z). </param>
+		public FbxMatrix(FbxVector3 pT, FbxVector3 pR, FbxVector3 pS)
         {
             var s = CreateScale(pS);
             var x = FbxMatrix.CreateRotationX(pR.X);
