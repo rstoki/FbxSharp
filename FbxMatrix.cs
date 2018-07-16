@@ -191,18 +191,23 @@ namespace FbxSharp
 
         public override string ToString()
         {
-            return string.Format("[" +
-                "{{M00 = {0}, M01 = {1}, M02 = {2}, M03 = {3}}} " +
-                "{{M10 = {4}, M11 = {5}, M12 = {6}, M13 = {7}}} " +
-                "{{M20 = {8}, M21 = {9}, M22 = {10}, M23 = {10}}} " +
-                "{{M30 = {11}, M31 = {12}, M32 = {13}, M33 = {15}}}]",
-                M00, M01, M02, M03,
-                M10, M11, M12, M13,
-                M20, M21, M22, M23,
-                M30, M31, M32, M33);
-        }
+            //return string.Format("[" +
+            //    "{{M00 = {0}, M01 = {1}, M02 = {2}, M03 = {3}}} " +
+            //    "{{M10 = {4}, M11 = {5}, M12 = {6}, M13 = {7}}} " +
+            //    "{{M20 = {8}, M21 = {9}, M22 = {10}, M23 = {10}}} " +
+            //    "{{M30 = {11}, M31 = {12}, M32 = {13}, M33 = {15}}}]",
+            //    M00, M01, M02, M03,
+            //    M10, M11, M12, M13,
+            //    M20, M21, M22, M23,
+            //    M30, M31, M32, M33);
+			return $"[" +
+				$"{{M00 = {M00}, M01 = {this.M01}, M02 = {M02}, M03 = {M03}}} " +
+				$"{{M10 = {M10}, M11 = {M11}, M12 = {M12}, M13 = {M13}}} " +
+				$"{{M20 = {M20}, M21 = {M21}, M22 = {M22}, M23 = {M23}}} " +
+				$"{{M30 = {M30}, M31 = {M31}, M32 = {M32}, M33 = {M33}}}" ; 
+		}
 
-        public double Get(int pY, int pX)
+		public double Get(int pY, int pX)
         {
             if (pY < 0 || pY > 3) throw new ArgumentOutOfRangeException("pY");
             if (pX < 0 || pX > 3) throw new ArgumentOutOfRangeException("pX");

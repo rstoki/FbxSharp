@@ -52,6 +52,28 @@ namespace FbxSharp
             return !u.Equals(v);
         }
 
+		/// <summary>
+		/// Multiplication operator that produces scalar multiplication with the vector.  
+		/// </summary>
+		/// <param name="s"></param>
+		/// <param name="v"></param>
+		/// <returns></returns>
+		public static FbxVector3 operator *(double s, FbxVector3 v)
+		{
+			return new FbxVector3(s * v.X, s * v.Y, s * v.Z); 
+		}
+
+		/// <summary>
+		/// Multiplication operator that produces scalar multiplication with the vector.   
+		/// </summary>
+		/// <param name="v"></param>
+		/// <param name="s"></param>
+		/// <returns></returns>
+		public static FbxVector3 operator *(FbxVector3 v, double s)
+		{
+			return s * v;
+		}
+
 
 
 		/// <summary>
